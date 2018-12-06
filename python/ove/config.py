@@ -13,8 +13,8 @@ _local_ports = {
 }
 
 _local_size = {
-    'width': 1440,
-    'height': 808,
+    'width': 4320,
+    'height': 2424,
     'screen_rows': 3,
     'screen_cols': 3
 }
