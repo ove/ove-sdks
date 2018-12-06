@@ -6,8 +6,11 @@ This package provides a Python interface to the [Open Visualization Environment 
 
 Download and install with setup.py:
 
-    cd ove/sdks/python
-    setup.py install
+```sh
+git clone https://github.com/ove/ove-sdks
+cd ove-sdks/python
+python setup.py install
+```
 
 ## Example Usage
 
