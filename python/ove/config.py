@@ -26,8 +26,8 @@ _do_ports = {'control': '9080',
              'html': '9083',
              'videos': '9084',
              'networks': '9085',
-             'charts': '8086',
-             'audio': '8088'
+             'charts': '9086',
+             'audio': '9088'
              }
 
 _dodev_size = {
