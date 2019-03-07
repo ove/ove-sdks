@@ -8,8 +8,7 @@ _local_ports = {
     'html': '8083',
     'videos': '8084',
     'networks': '8085',
-    'charts': '8086',
-    'imagetiles': '8087'
+    'charts': '8086'
 }
 
 _local_size = {
@@ -26,8 +25,7 @@ _do_ports = {'control': '9080',
              'html': '9083',
              'videos': '9084',
              'networks': '9085',
-             'charts': '9086',
-             'imagetiles': '9087'
+             'charts': '9086'
              }
 
 _dodev_size = {

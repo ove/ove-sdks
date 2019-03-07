@@ -21,8 +21,7 @@ _DEFAULT_PORTS = {
     'html': '8083',
     'videos': '8084',
     'networks': '8085',
-    'charts': '8086',
-    'imagetiles': '8087'
+    'charts': '8086'
 }
 
 
