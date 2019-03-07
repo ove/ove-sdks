@@ -5,7 +5,6 @@ import json
 import webbrowser
 import math
 import uuid
-import json
 
 _DEFAULT_GEOMETRY = {
     "screen_rows": 0,
