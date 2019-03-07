@@ -22,7 +22,10 @@ _DEFAULT_PORTS = {
     'videos': '8084',
     'networks': '8085',
     'charts': '8086',
-    'imagetiles': '8087'
+    'audio': '8088',
+    'svg': '8089',
+    'whiteboard': '8090',
+    'pdf': '8091',
 }
 
 
@@ -121,6 +124,13 @@ class Space:
             section = NetworkSection(section_id, data, self)
         elif app_type == "charts":
             section = ChartSection(section_id, data, self)
+        elif app_type == "svg":
+            section = SVGSection(section_id, data, self)
+        elif app_type == "whiteboard":
+            section = WhiteboardSection(section_id, data, self)
+        elif app_type == "pdf":
+            section = PDFSection(section_id, data, self)
+
         else:
             print("Don't know how to create section of type " + app_type)
             return False
@@ -166,6 +176,12 @@ class Space:
                 section.set_specification(state.get("specURL", False), state.get("spec", False),
                                           state.get("options", False))
 
+            elif app_type == "SVG":
+                section.set_url(state["url"])
+            elif app_type == "whiteboard":
+                pass
+            elif app_type == "PDF":
+                section.set_url(state["url"])
             else:
                 print("Don't know how to recreate section of type " + app_type)
 
@@ -248,11 +264,67 @@ class HTMLSection(Section):
         request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
             self.space.ove_host, self.space.ports['html'], self.section_id, url)
 
-        self.space.client.open_browser(app_type="URL", request_url=request_url)
+        self.space.client.open_browser(app_type="HTML", request_url=request_url)
 
     def get_app_json(self):
         return {
             "url": "OVE_APP_HTML",
+            "states": {"load": {"url": self.url}}
+        }
+
+
+class SVGSection(Section):
+    def __init__(self, section_id, section_data, space):
+        super(SVGSection, self).__init__(section_id, section_data, space)
+        self.url = ""
+
+    def set_url(self, url):
+        self.url = url
+
+        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
+            self.space.ove_host, self.space.ports['svg'], self.section_id, url)
+
+        self.space.client.open_browser(app_type="svg", request_url=request_url)
+
+    def get_app_json(self):
+        return {
+            "url": "OVE_APP_SVG",
+            "states": {"load": {"url": self.url}}
+        }
+
+
+class WhiteboardSection(Section):
+    def __init__(self, section_id, section_data, space):
+        super(WhiteboardSection, self).__init__(section_id, section_data, space)
+        self.url = ""
+
+        request_url = "%s:%s/control.html?oveSectionId=%s" % (
+            self.space.ove_host, self.space.ports['whiteboard'], self.section_id)
+        self.space.client.open_browser(app_type="whiteboard", request_url=request_url)
+
+
+    def get_app_json(self):
+        return {
+            "url": "OVE_APP_WHITEBOARD"
+        }
+
+
+class PDFSection(Section):
+    def __init__(self, section_id, section_data, space):
+        super(PDFSection, self).__init__(section_id, section_data, space)
+        self.url = ""
+
+    def set_url(self, url):
+        self.url = url
+
+        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
+            self.space.ove_host, self.space.ports['pdf'], self.section_id, url)
+
+        self.space.client.open_browser(app_type="PDF", request_url=request_url)
+
+    def get_app_json(self):
+        return {
+            "url": "OVE_APP_PDF",
             "states": {"load": {"url": self.url}}
         }
 
