@@ -45,6 +45,7 @@ class Space:
         self.geometry = geometry if geometry is not None else _DEFAULT_GEOMETRY
 
         self.videos = Videos(self)
+        self.audio = Audio(self)
 
         self.row_height = 0
         self.col_width = 0
@@ -130,7 +131,8 @@ class Space:
             section = WhiteboardSection(section_id, data, self)
         elif app_type == "pdf":
             section = PDFSection(section_id, data, self)
-
+        elif app_type == "audio":
+            section = AudioSection(section_id, data, self)
         else:
             print("Don't know how to create section of type " + app_type)
             return False
@@ -178,10 +180,16 @@ class Space:
 
             elif app_type == "SVG":
                 section.set_url(state["url"])
+                
             elif app_type == "whiteboard":
                 pass
+              
             elif app_type == "PDF":
                 section.set_url(state["url"])
+                
+            elif app_type == "audio":
+                section.set_specification(state["url"])
+
             else:
                 print("Don't know how to recreate section of type " + app_type)
 
@@ -218,6 +226,67 @@ class Videos:
 
     def seek(self, time, params=None):
         request_url = "%s:%s/operation/seekTo&time=%s" % (self.space.ove_host, self.video_port, time)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+
+class Audio:
+    def __init__(self, space, exec_commands=True):
+        self.space = space
+        self.port = space.ports["audio"]
+        self.exec_commands = exec_commands
+
+    def play(self, params=None):
+        request_url = "%s:%s/operation/play" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def pause(self, params=None):
+        request_url = "%s:%s/operation/pause" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def stop(self, params=None):
+        request_url = "%s:%s/operation/stop" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def mute(self, params=None):
+        request_url = "%s:%s/operation/mute" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def unmute(self, params=None):
+        request_url = "%s:%s/operation/unwute" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def vol_up(self, params=None):
+        request_url = "%s:%s/operation/volUp" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def vol_down(self, params=None):
+        request_url = "%s:%s/operation/volDown" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def set_volume(self, params=None):
+        request_url = "%s:%s/operation/setVolume" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            self.space.client.get(request_url, params=params)
+
+    def buffer_status(self, params=None):
+        request_url = "%s:%s/operation/bufferStatus" % (self.space.ove_host, self.port)
+        if self.exec_commands:
+            try:
+                result = self.space.client.get(request_url, params=params)
+                return json.loads(result.text)['status']
+            except:
+                raise ValueError("Could not retrieve the status")
+
+    def seek(self, time, params=None):
+        request_url = "%s:%s/operation/seekTo&time=%s" % (self.space.ove_host, self.port, time)
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
@@ -368,6 +437,55 @@ class ImageSection(Section):
             "url": "OVE_APP_IMAGES",
             "states": {"load": {"config": self.state["config"], "position": {}}}
         }
+
+
+class AudioSection(Section):
+    def __init__(self, section_id, section_data, space):
+        super(AudioSection, self).__init__(section_id, section_data, space)
+        self.url = {}
+
+    def set_url(self, url):
+        self.url = url
+        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
+            self.space.ove_host, self.space.ports['audio'], self.section_id, self.url)
+
+        self.space.client.open_browser(app_type="audio", request_url=request_url)
+
+    def get_app_json(self):
+        return {
+            "url": "OVE_APP_AUDIO",
+            "states": {"load": {"url": self.url}}
+        }
+
+    def play(self):
+        self.space.audio.play({"oveSectionId": self.section_id})
+
+    def pause(self):
+        self.space.audio.pause({"oveSectionId": self.section_id})
+
+    def stop(self):
+        self.space.audio.stop({"oveSectionId": self.section_id})
+
+    def mute(self):
+        self.space.audio.mute({"oveSectionId": self.section_id})
+
+    def unmute(self):
+        self.space.audio.unmute({"oveSectionId": self.section_id})
+
+    def vol_up(self):
+        self.space.audio.vol_up({"oveSectionId": self.section_id})
+
+    def vol_down(self):
+        self.space.audio.vol_down({"oveSectionId": self.section_id})
+
+    def set_volume(self):
+        self.space.audio.set_volume({"oveSectionId": self.section_id})
+
+    def seek(self):
+        self.space.audio.seek({"oveSectionId": self.section_id})
+
+    def buffer_status(self):
+        return self.space.audio.buffer_status({"oveSectionId": self.section_id})
 
 
 class VideoSection(Section):

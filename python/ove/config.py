@@ -12,7 +12,7 @@ _local_ports = {
     'audio': '8088',
     'svg': '8089',
     'whiteboard': '8090',
-    'pdf': '8091',
+    'pdf': '8091'
 }
 
 _local_size = {
