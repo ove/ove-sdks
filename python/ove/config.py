@@ -9,7 +9,7 @@ _local_ports = {
     'videos': '8084',
     'networks': '8085',
     'charts': '8086',
-    'imagetiles': '8087'
+    'audio': '8088'
 }
 
 _local_size = {
@@ -27,7 +27,7 @@ _do_ports = {'control': '9080',
              'videos': '9084',
              'networks': '9085',
              'charts': '9086',
-             'imagetiles': '9087'
+             'audio': '9088'
              }
 
 _dodev_size = {
