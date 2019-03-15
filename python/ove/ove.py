@@ -306,6 +306,17 @@ class Section(object):
         self.space.client.post("%s:%s/state/%s" % (self.space.ove_host, self.space.ports[app], state_name), params=data)
         print("Created state: %s:%s/state/%s" % (self.space.ove_host, self.space.ports[app], state_name))
 
+    def get_state(self):
+        app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
+                     'NetworkSection': 'networks', 'ChartSection': 'charts', 'SVGSection': 'svg',
+                     'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio'}
+
+        app_name = app_names[self.__class__.__name__]
+        url = "%s:%s/%s/state" % (self.space.ove_host, self.space.ports[app_name], self.section_id)
+
+        r = self.space.client.get(url)
+        return r.json()
+
     def get_app_json(self):
         # this should never happen, but it's better to be safe than sorry
         raise NotImplementedError("This method is not implemented. " +
@@ -370,7 +381,6 @@ class WhiteboardSection(Section):
         request_url = "%s:%s/control.html?oveSectionId=%s" % (
             self.space.ove_host, self.space.ports['whiteboard'], self.section_id)
         self.space.client.open_browser(app_type="whiteboard", request_url=request_url)
-
 
     def get_app_json(self):
         return {
