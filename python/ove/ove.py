@@ -31,7 +31,7 @@ _DEFAULT_PORTS = {
 
 class Space:
     def __init__(self, ove_host, space_name, ports=None, geometry=None, offline=True, open_browsers=False):
-        # type (string, string, Dict, Dict, bool) -> None
+        # type (string, string, Dict, Dict, bool, bool) -> None
 
         if not ove_host.startswith("http"):
             ove_host = "http://" + ove_host
