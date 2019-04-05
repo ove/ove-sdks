@@ -30,14 +30,14 @@ _DEFAULT_PORTS = {
 
 
 class Space:
-    def __init__(self, ove_host, space_name, ports=None, geometry=None, offline=True):
+    def __init__(self, ove_host, space_name, ports=None, geometry=None, offline=True, open_browsers=False):
         # type (string, string, Dict, Dict, bool) -> None
 
         if not ove_host.startswith("http"):
             ove_host = "http://" + ove_host
         self.ove_host = ove_host
 
-        self.client = RestClient(offline=offline)
+        self.client = RestClient(offline=offline, open_browsers=open_browsers)
 
         self.space_name = space_name
 
@@ -61,6 +61,12 @@ class Space:
 
     def enable_offline_mode(self):
         self.client.offline = True
+
+    def enable_browser_opening(self):
+        self.client.open_browsers = True
+
+    def disable_browser_opening(self):
+        self.client.open_browsers = False
 
     def set_grid(self, rows, cols):
         self.num_rows = rows
@@ -641,9 +647,10 @@ class ChartSection(Section):
 
 
 class RestClient:
-    def __init__(self, offline=True):
-        # type: (bool) -> None
+    def __init__(self, offline=True, open_browsers=True):
+        # type: (bool, bool) -> None
         self.offline = offline
+        self.open_browsers = open_browsers
 
     def get(self, url, params=None):
         # type: (str, Union[str, Dict]) -> None
@@ -676,7 +683,7 @@ class RestClient:
 
     def open_browser(self, app_type, request_url):
         # type: (str, str) -> None
-        if not self.offline:
+        if self.open_browsers and not self.offline:
             # temporally adding this method here
             print("To load ", app_type, ", open: " + request_url)
             webbrowser.open(request_url)

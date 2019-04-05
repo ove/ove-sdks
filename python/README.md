@@ -17,6 +17,9 @@ python setup.py install
 **Note:** The space is automatically put into offline mode which allows you to design your space without pushing changes 
 live into the DO environment. If you wish to interact with the space directly you can **enable online mode** after import.
 
+There is also an *browser_opening* mode: if both this and *online mode* is enabled, then the control page for a section 
+will be automatically opened in your web browser after it is created.
+
 ````python
 from ove import save_file
 from ove.config import dodev as space
@@ -25,6 +28,10 @@ from ove.config import dodev as space
 
 # enable live mode if you wish to interact with the space directly
 # space.enable_online_mode()
+
+# uncomment this if you wish to automatically open control pages for new sections in a web browsers
+# space.enable_browser_opening()
+
 
 space.delete_sections()
 
