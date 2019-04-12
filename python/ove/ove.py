@@ -13,24 +13,9 @@ _DEFAULT_GEOMETRY = {
     "width": 0
 }
 
-# Listed in pm2.json
-_DEFAULT_PORTS = {
-    'control': '8080',
-    'maps': '8081',
-    'images': '8082',
-    'html': '8083',
-    'videos': '8084',
-    'networks': '8085',
-    'charts': '8086',
-    'audio': '8088',
-    'svg': '8089',
-    'whiteboard': '8090',
-    'pdf': '8091',
-}
-
 
 class Space:
-    def __init__(self, ove_host, space_name, ports=None, geometry=None, offline=True, open_browsers=False):
+    def __init__(self, ove_host, space_name, control_port=8080, geometry=None, offline=True, open_browsers=False):
         # type (string, string, Dict, Dict, bool, bool) -> None
 
         if not ove_host.startswith("http"):
@@ -41,8 +26,8 @@ class Space:
 
         self.space_name = space_name
 
-        self.ports = ports if ports is not None else _DEFAULT_PORTS
-        self.geometry = geometry if geometry is not None else _DEFAULT_GEOMETRY
+        self.control_port = control_port
+        self.geometry = geometry if geometry is not None else _DEFAULT_GEOMETRY # TODO: get geometry
 
         self.videos = Videos(self)
         self.audio = Audio(self)
@@ -55,6 +40,8 @@ class Space:
         self.set_grid(self.geometry["screen_rows"], self.geometry["screen_cols"])
 
         self.sections = []
+
+        self.apps = ["maps", "images", "html", "videos", "networks", "charts", "svg", "whiteboard", "pdf", "audio"]
 
     def enable_online_mode(self):
         self.client.offline = False
@@ -90,12 +77,12 @@ class Space:
                                 app_type, allow_oversized_section=allow_oversized_section)
 
     def delete_sections(self):
-        self.client.delete("%s:%s/sections" % (self.ove_host, self.ports['control']))
+        self.client.delete("%s:%s/sections" % (self.ove_host, self.control_port))
         self.sections = []
 
     def add_section(self, w, h, x, y, app_type, allow_oversized_section=False):
-        if app_type not in list(self.ports.keys()):
-            print("%s is not a valid app type (%s are supported)" % (app_type, ", ".join(list(self.ports.keys()))))
+        if app_type not in list(self.apps):
+            print("%s is not a valid app type (%s are supported)" % (app_type, ", ".join(list(self.apps))))
             return False
 
         data = {"space": self.space_name,
@@ -103,7 +90,7 @@ class Space:
                 "h": h,
                 "x": x,
                 "y": y,
-                "app": {"url": self.ove_host + ":" + self.ports[app_type]}}
+                "app": {"url": "%s:%s/app/%s/" % (self.ove_host, self.control_port, app_type)}}
 
         if not allow_oversized_section:
             if (x + w) > self.geometry["width"]:
@@ -113,11 +100,11 @@ class Space:
                 print("Section not created: would extend beyond space")
                 return False
 
-        r = self.client.post("%s:%s/section" % (self.ove_host, self.ports['control']), params=data)
+        r = self.client.post("%s:%s/section" % (self.ove_host, self.control_port), params=data)
         section_id = json.loads(r.text)["id"] if not self.client.offline else str(uuid.uuid4())
 
         print("Created section %s: control page is %s:%s/control.html?oveSectionId=%s" % (
-            section_id, self.ove_host, self.ports['control'], section_id))
+            section_id, self.ove_host, self.control_port, section_id))
 
         if app_type == "maps":
             section = MapSection(section_id, data, self)
@@ -203,26 +190,26 @@ class Space:
 class Videos:
     def __init__(self, space, exec_commands=True):
         self.space = space
-        self.video_port = space.ports["videos"]
+        self.base_url = "%s:%s/app/videos/operation/" % (self.space.ove_host, self.space.control_port)
         self.exec_commands = exec_commands
 
     def play(self, params=None):
-        request_url = "%s:%s/operation/play" % (self.space.ove_host, self.video_port)
+        request_url = self.base_url + "play"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def pause(self, params=None):
-        request_url = "%s:%s/operation/pause" % (self.space.ove_host, self.video_port)
+        request_url = self.base_url + "pause"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def stop(self, params=None):
-        request_url = "%s:%s/operation/stop" % (self.space.ove_host, self.video_port)
+        request_url = self.base_url + "stop"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def buffer_status(self, params=None):
-        request_url = "%s:%s/operation/bufferStatus" % (self.space.ove_host, self.video_port)
+        request_url = self.base_url + "bufferStatus"
         if self.exec_commands:
             try:
                 result = self.space.client.get(request_url, params=params)
@@ -231,7 +218,7 @@ class Videos:
                 raise ValueError("Could not retrieve the status")
 
     def seek(self, time, params=None):
-        request_url = "%s:%s/operation/seekTo&time=%s" % (self.space.ove_host, self.video_port, time)
+        request_url = self.base_url + "operation/seekTo&time=" + str(time)
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
@@ -239,51 +226,51 @@ class Videos:
 class Audio:
     def __init__(self, space, exec_commands=True):
         self.space = space
-        self.port = space.ports["audio"]
+        self.base_url = "%s:%s/app/audio/operation/" % (self.space.ove_host, self.space.control_port)
         self.exec_commands = exec_commands
 
     def play(self, params=None):
-        request_url = "%s:%s/operation/play" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "play"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def pause(self, params=None):
-        request_url = "%s:%s/operation/pause" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "pause"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def stop(self, params=None):
-        request_url = "%s:%s/operation/stop" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "stop"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def mute(self, params=None):
-        request_url = "%s:%s/operation/mute" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "mute"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def unmute(self, params=None):
-        request_url = "%s:%s/operation/unwute" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "unmute"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def vol_up(self, params=None):
-        request_url = "%s:%s/operation/volUp" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "volUp"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def vol_down(self, params=None):
-        request_url = "%s:%s/operation/volDown" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "volDown"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def set_volume(self, params=None):
-        request_url = "%s:%s/operation/setVolume" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "setVolume"
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
     def buffer_status(self, params=None):
-        request_url = "%s:%s/operation/bufferStatus" % (self.space.ove_host, self.port)
+        request_url = self.base_url + "bufferStatus"
         if self.exec_commands:
             try:
                 result = self.space.client.get(request_url, params=params)
@@ -292,7 +279,7 @@ class Audio:
                 raise ValueError("Could not retrieve the status")
 
     def seek(self, time, params=None):
-        request_url = "%s:%s/operation/seekTo&time=%s" % (self.space.ove_host, self.port, time)
+        request_url = self.base_url + "seekTo&time=" + str(time)
         if self.exec_commands:
             self.space.client.get(request_url, params=params)
 
@@ -305,12 +292,12 @@ class Section(object):
 
     def delete(self):
         self.space.client.delete(
-            "%s:%s/section/%s" % (self.space.ove_host, self.space.ports['control'], self.section_id))
+            "%s:%s/section/%s" % (self.space.ove_host, self.space.control_port, self.section_id))
         self.space.sections.remove(self)
 
     def add_state(self, app, state_name, data):
-        self.space.client.post("%s:%s/state/%s" % (self.space.ove_host, self.space.ports[app], state_name), params=data)
-        print("Created state: %s:%s/state/%s" % (self.space.ove_host, self.space.ports[app], state_name))
+        self.space.client.post("%s/state/%s" % (self.get_state(), state_name), params=data)
+        print("Created state: %s/state/%s" % (self.get_state(), state_name))
 
     def get_state(self):
         app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
@@ -318,10 +305,19 @@ class Section(object):
                      'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio'}
 
         app_name = app_names[self.__class__.__name__]
-        url = "%s:%s/%s/state" % (self.space.ove_host, self.space.ports[app_name], self.section_id)
+        url = "%s/%s/state" % (self.get_base_url(), self.section_id)
 
         r = self.space.client.get(url)
         return r.json()
+
+    def get_base_url(self):
+        app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
+                     'NetworkSection': 'networks', 'ChartSection': 'charts', 'SVGSection': 'svg',
+                     'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio'}
+
+        app_name = app_names[self.__class__.__name__]
+        return "%s:%s/app/%s" % (self.space.ove_host, self.space.control_port, app_name)
+
 
     def get_app_json(self):
         # this should never happen, but it's better to be safe than sorry
@@ -347,8 +343,7 @@ class HTMLSection(Section):
     def set_url(self, url):
         self.url = url
 
-        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
-            self.space.ove_host, self.space.ports['html'], self.section_id, url)
+        request_url = "%s/control.html?oveSectionId=%s&url=%s" % (self.get_base_url(), self.section_id, url)
 
         self.space.client.open_browser(app_type="HTML", request_url=request_url)
 
@@ -367,8 +362,7 @@ class SVGSection(Section):
     def set_url(self, url):
         self.url = url
 
-        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
-            self.space.ove_host, self.space.ports['svg'], self.section_id, url)
+        request_url = "%s/control.html?oveSectionId=%s&url=%s" % (self.get_base_url(), self.section_id, url)
 
         self.space.client.open_browser(app_type="svg", request_url=request_url)
 
@@ -384,8 +378,7 @@ class WhiteboardSection(Section):
         super(WhiteboardSection, self).__init__(section_id, section_data, space)
         self.url = ""
 
-        request_url = "%s:%s/control.html?oveSectionId=%s" % (
-            self.space.ove_host, self.space.ports['whiteboard'], self.section_id)
+        request_url = "%s/control.html?oveSectionId=%s" % (self.get_base_url(), self.section_id)
         self.space.client.open_browser(app_type="whiteboard", request_url=request_url)
 
     def get_app_json(self):
@@ -402,8 +395,7 @@ class PDFSection(Section):
     def set_url(self, url):
         self.url = url
 
-        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
-            self.space.ove_host, self.space.ports['pdf'], self.section_id, url)
+        request_url = "%s/control.html?oveSectionId=%s&url=%s" % (self.get_base_url(), self.section_id, url)
 
         self.space.client.open_browser(app_type="PDF", request_url=request_url)
 
@@ -426,8 +418,7 @@ class ImageSection(Section):
         self.state = self.build_image_state(url)
         self.add_state('images', name, self.state)
 
-        request_url = "%s:%s/control.html?oveSectionId=%s&state=%s" % (
-            self.space.ove_host, self.space.ports['images'], self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
 
         self.space.client.open_browser(app_type="image", request_url=request_url)
 
@@ -462,8 +453,7 @@ class AudioSection(Section):
 
     def set_url(self, url):
         self.url = url
-        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
-            self.space.ove_host, self.space.ports['audio'], self.section_id, self.url)
+        request_url = "%s/control.html?oveSectionId=%s&url=%s" % (self.get_base_url(), self.section_id, self.url)
 
         self.space.client.open_browser(app_type="audio", request_url=request_url)
 
@@ -511,8 +501,7 @@ class VideoSection(Section):
 
     def set_url(self, video_url):
         self.url = video_url.replace('https://www.youtube.com/watch?v=', 'http://www.youtube.com/embed/')
-        request_url = "%s:%s/control.html?oveSectionId=%s&url=%s" % (
-            self.space.ove_host, self.space.ports['videos'], self.section_id, self.url)
+        request_url = "%s/control.html?oveSectionId=%s&url=%s" % (self.get_base_url(), self.section_id, self.url)
 
         self.space.client.open_browser(app_type="video", request_url=request_url)
 
@@ -553,8 +542,7 @@ class MapSection(Section):
         }
         self.add_state('maps', name, self.state)
 
-        request_url = "%s:%s/control.html?oveSectionId=%s&state=%s" % (
-            self.space.ove_host, self.space.ports['maps'], self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
 
         self.space.client.open_browser(app_type="map", request_url=request_url)
 
@@ -597,8 +585,7 @@ class NetworkSection(Section):
 
         self.add_state('networks', name, self.state)
 
-        request_url = "%s:%s/control.html?oveSectionId=%s&state=%s" % (
-            self.space.ove_host, self.space.ports['networks'], self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
 
         self.space.client.open_browser(app_type="network", request_url=request_url)
 
@@ -633,8 +620,7 @@ class ChartSection(Section):
 
         self.add_state('charts', name, self.state)
 
-        request_url = "%s:%s/control.html?oveSectionId=%s&state=%s" % (
-            self.space.ove_host, self.space.ports['charts'], self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
 
         self.space.client.open_browser(app_type="chart", request_url=request_url)
 

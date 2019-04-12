@@ -1,20 +1,6 @@
 from .ove import Space
 
 # Configuration for local testing
-_local_ports = {
-    'control': '8080',
-    'maps': '8081',
-    'images': '8082',
-    'html': '8083',
-    'videos': '8084',
-    'networks': '8085',
-    'charts': '8086',
-    'audio': '8088',
-    'svg': '8089',
-    'whiteboard': '8090',
-    'pdf': '8091'
-}
-
 _local_size = {
     'width': 4320,
     'height': 2424,
@@ -23,19 +9,6 @@ _local_size = {
 }
 
 # Configuration for Data Observatory and DO-Dev
-_do_ports = {'control': '9080',
-             'maps': '9081',
-             'images': '9082',
-             'html': '9083',
-             'videos': '9084',
-             'networks': '9085',
-             'charts': '9086',
-             'audio': '9088',
-             'svg': '9089',
-             'whiteboard': '9090',
-             'pdf': '9091',
-}
-
 _dodev_size = {
     'height': 4320,
     'width': 15360,
@@ -50,6 +23,6 @@ _do_size = {
     'screen_cols': 16
 }
 
-local_space = Space(ove_host="localhost", space_name="LocalNine", ports=_local_ports, geometry=_local_size)
-dodev = Space(ove_host="gdo-appsdev.dsi.ic.ac.uk", space_name="DODev", ports=_do_ports, geometry=_dodev_size)
-doprod = Space(ove_host="gdo-appsdev.dsi.ic.ac.uk", space_name="DOCluster", ports=_do_ports, geometry=_do_size)
+local_space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080, geometry=_local_size)
+dodev = Space(ove_host="gdo-appsdev.dsi.ic.ac.uk", space_name="DODev", control_port=9080, geometry=_dodev_size)
+doprod = Space(ove_host="gdo-appsdev.dsi.ic.ac.uk", space_name="DOCluster", control_port=9080, geometry=_do_size)
