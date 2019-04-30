@@ -6,13 +6,6 @@ import webbrowser
 import math
 import uuid
 
-_DEFAULT_GEOMETRY = {
-    "screen_rows": 0,
-    "screen_cols": 0,
-    "height": 0,
-    "width": 0
-}
-
 
 class Space:
     def __init__(self, ove_host, space_name, control_port=8080, geometry=None, offline=True, open_browsers=False):
@@ -27,7 +20,7 @@ class Space:
         self.space_name = space_name
 
         self.control_port = control_port
-        self.geometry = geometry if geometry is not None else _DEFAULT_GEOMETRY # TODO: get geometry
+        self.geometry = geometry if geometry is not None else self.get_geometry()
 
         self.videos = Videos(self)
         self.audio = Audio(self)
@@ -54,6 +47,18 @@ class Space:
 
     def disable_browser_opening(self):
         self.client.open_browsers = False
+
+    def get_geometry(self):
+        r = requests.get('%s:%s/spaces' % (self.ove_host, self.control_port))
+        spaces = json.loads(r.text)
+        space = spaces[self.space_name]
+
+        return {
+            'width': max([client['x'] + client['w'] for client in space]),
+            'height': max([client['y'] + client['h'] for client in space]),
+            'screen_cols': len(set([client['x'] for client in space])),
+            'screen_rows': len(set([client['y'] for client in space]))
+        }
 
     def set_grid(self, rows, cols):
         self.num_rows = rows
@@ -296,8 +301,8 @@ class Section(object):
         self.space.sections.remove(self)
 
     def add_state(self, app, state_name, data):
-        self.space.client.post("%s/state/%s" % (self.get_state(), state_name), params=data)
-        print("Created state: %s/state/%s" % (self.get_state(), state_name))
+        self.space.client.post("%s/states/%s" % (self.get_base_url(), state_name), params=data)
+        print("Created state: %s/states/%s" % (self.get_base_url(), state_name))
 
     def get_state(self):
         app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
@@ -305,10 +310,11 @@ class Section(object):
                      'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio'}
 
         app_name = app_names[self.__class__.__name__]
-        url = "%s/%s/state" % (self.get_base_url(), self.section_id)
+        url = "%s/instances/%s/state" % (self.get_base_url(), self.section_id)
 
+        print(url)
         r = self.space.client.get(url)
-        return r.json()
+        return r.json() if r else {}
 
     def get_base_url(self):
         app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
