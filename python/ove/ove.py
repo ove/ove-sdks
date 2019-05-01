@@ -178,13 +178,13 @@ class Space:
 
             elif app_type == "SVG":
                 section.set_url(state["url"])
-                
+
             elif app_type == "whiteboard":
                 pass
-              
+
             elif app_type == "PDF":
                 section.set_url(state["url"])
-                
+
             elif app_type == "audio":
                 section.set_specification(state["url"])
 
@@ -305,14 +305,7 @@ class Section(object):
         self.space.client.post(url, params=data)
 
     def get_state(self):
-        app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
-                     'NetworkSection': 'networks', 'ChartSection': 'charts', 'SVGSection': 'svg',
-                     'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio'}
-
-        app_name = app_names[self.__class__.__name__]
         url = "%s/instances/%s/state" % (self.get_base_url(), self.section_id)
-
-        print(url)
         r = self.space.client.get(url)
         return r.json() if r else {}
 

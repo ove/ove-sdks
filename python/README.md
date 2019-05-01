@@ -120,4 +120,3 @@ space.set_grid(space.geometry["screen_rows"], space.geometry["screen_cols"])
 html = space.add_section_by_grid(w=2, h=2, r=0, c=0, app_type='html')
 html.set_url("http://metafilter.com")
 ```
-
