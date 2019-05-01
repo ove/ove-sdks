@@ -1,13 +1,18 @@
-# Python client library for the OVE API
+# OVE Python Client Library
 
-This package provides a Python interface to the [Open Visualization Environment (OVE)](https://github.com/ove/ove) developed at the Imperial College [Data Science Institute](http://www.imperial.ac.uk/data-science/) for use with the [Data Observatory](http://www.imperial.ac.uk/data-science/data-observatory/).
+This library provides a Python interface to the [Open Visualization Environment (OVE)](https://github.com/ove/ove) developed at the Imperial College [Data Science Institute](http://www.imperial.ac.uk/data-science/) for use with the [Data Observatory](http://www.imperial.ac.uk/data-science/data-observatory/).
 
 ## Installation
 
-Download and install with setup.py:
+The source code can be downloaded from the [Releases page](https://github.com/ove/ove-sdks/releases) or cloned by running:
 
 ```sh
 git clone https://github.com/ove/ove-sdks
+```
+
+To install with setup.py:
+
+```sh
 cd ove-sdks/python
 python setup.py install
 ```
@@ -20,7 +25,7 @@ live into the DO environment. If you wish to interact with the space directly yo
 There is also an *browser_opening* mode: if both this and *online mode* is enabled, then the control page for a section 
 will be automatically opened in your web browser after it is created.
 
-````python
+```python
 from ove import save_file
 
 from ove.ove import Space
@@ -31,7 +36,6 @@ space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080)
 
 # uncomment this if you wish to automatically open control pages for new sections in a web browsers
 # space.enable_browser_opening()
-
 
 space.delete_sections()
 
@@ -59,8 +63,7 @@ chart.set_specification(spec_url="https://raw.githubusercontent.com/vega/vega/ma
 
 # the state of the space can be saved automatically with the save state file util function
 save_file(json_state=space.to_json(title="Title of the presentation"), filename="my_state.json")
-
-````
+```
 
 Videos can also be controlled independently:
 
@@ -68,27 +71,23 @@ Videos can also be controlled independently:
 from ove.ove import Space
 space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080)
 
-
 space.delete_sections()
 
 video = space.add_section(w=2880, h=1616, x=720, y=404, app_type='videos')
 video.set_url('https://www.youtube.com/watch?v=QJo-VFs1X5c')
 
-
 video2 = space.add_section_by_grid(r=1, c=1, w=1, h=1, app_type='videos')
 video2.set_url("https://www.youtube.com/watch?v=XY3NP4JHXZ4")
-
 
 video.play()
 video2.play()
 video.pause()
 video2.pause()
-
 ```
 
 ``ove-python`` also includes a local web-server that can be used to host images.
 
-````python
+```python
 import matplotlib.pyplot as plt
 
 from ove.server import Server
@@ -102,20 +101,17 @@ s.start_server()
 a = plt.figure()
 plt.plot([1, 2, 3], [4, 5, 6])
 
-
 # share_matplotlib() exports a plot object to PNG, and returns the url where can be accessed
 url = s.share_matplotlib(a)
 image = space.add_section_by_grid(w=1, h=1, r=2, c=2, app_type='images')
 image.set_url(url)
+```
 
-````
+Web content can be displayed in a similar way:
 
-Testing both DODev left and DODev right:
-
-````python
+```python
 from ove.ove import Space
 space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080)
-
 
 space.delete_sections()
 
@@ -123,7 +119,5 @@ space.set_grid(space.geometry["screen_rows"], space.geometry["screen_cols"])
 
 html = space.add_section_by_grid(w=2, h=2, r=0, c=0, app_type='html')
 html.set_url("http://metafilter.com")
+```
 
-html2 = space.add_section_by_grid(w=2, h=2, r=0, c=4, app_type='html')
-html2.set_url("http://ask.metafilter.com")
-````
