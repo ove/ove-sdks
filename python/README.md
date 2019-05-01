@@ -51,7 +51,7 @@ map1 = space.add_section(w=5000, h=3000, x=10200, y=800, app_type='maps')
 map1.set_position(latitude=0, longitude=0, zoom=5)
 
 network = space.add_section(w=5000, h=3000, x=10200, y=800, app_type='networks')
-network.set_data(json_url="https://raw.githubusercontent.com/ove/ove-apps/master/packages/ove-app-graphs/src/data/sample.json")
+network.set_data(json_url="https://raw.githubusercontent.com/ove/ove-apps/master/packages/ove-app-networks/src/data/sample.json")
 
 chart = space.add_section_by_grid(w=1, h=1, r=0, c=0, app_type="charts")
 
