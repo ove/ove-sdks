@@ -22,9 +22,9 @@ will be automatically opened in your web browser after it is created.
 
 ````python
 from ove import save_file
-from ove.config import dodev as space
-# alternatively the doprod can be imported for the production environment
-# from ove.config import doprod as space
+
+from ove.ove import Space
+space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080)
 
 # enable live mode if you wish to interact with the space directly
 # space.enable_online_mode()
@@ -51,7 +51,7 @@ map1 = space.add_section(w=5000, h=3000, x=10200, y=800, app_type='maps')
 map1.set_position(latitude=0, longitude=0, zoom=5)
 
 network = space.add_section(w=5000, h=3000, x=10200, y=800, app_type='networks')
-network.set_data(json_url="https://raw.githubusercontent.com/ove/ove-apps/master/packages/ove-app-graphs/src/data/sample.json")
+network.set_data(json_url="https://raw.githubusercontent.com/ove/ove-apps/master/packages/ove-app-networks/src/data/sample.json")
 
 chart = space.add_section_by_grid(w=1, h=1, r=0, c=0, app_type="charts")
 
@@ -65,7 +65,9 @@ save_file(json_state=space.to_json(title="Title of the presentation"), filename=
 Videos can also be controlled independently:
 
 ```python
-from ove.config import dodev as space
+from ove.ove import Space
+space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080)
+
 
 space.delete_sections()
 
@@ -91,7 +93,8 @@ import matplotlib.pyplot as plt
 
 from ove.server import Server
 
-from ove.config import dodev as space
+from ove.ove import Space
+space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080)
 
 s = Server()
 s.start_server()
@@ -110,7 +113,9 @@ image.set_url(url)
 Testing both DODev left and DODev right:
 
 ````python
-from ove.config import dodev as space
+from ove.ove import Space
+space = Space(ove_host="localhost", space_name="LocalNine", control_port=8080)
+
 
 space.delete_sections()
 
