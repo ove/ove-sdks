@@ -300,9 +300,9 @@ class Section(object):
             "%s:%s/sections/%s" % (self.space.ove_host, self.space.control_port, self.section_id))
         self.space.sections.remove(self)
 
-    def add_state(self, app, state_name, data):
-        self.space.client.post("%s/states/%s" % (self.get_base_url(), state_name), params=data)
-        print("Created state: %s/states/%s" % (self.get_base_url(), state_name))
+    def set_state(self, data):
+        url = "%s/instances/%s/state" % (self.get_base_url(), self.section_id)
+        self.space.client.post(url, params=data)
 
     def get_state(self):
         app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
@@ -323,7 +323,6 @@ class Section(object):
 
         app_name = app_names[self.__class__.__name__]
         return "%s:%s/app/%s" % (self.space.ove_host, self.space.control_port, app_name)
-
 
     def get_app_json(self):
         # this should never happen, but it's better to be safe than sorry
@@ -422,9 +421,9 @@ class ImageSection(Section):
             name = str(uuid.uuid1())
 
         self.state = self.build_image_state(url)
-        self.add_state('images', name, self.state)
+        self.set_state(self.state)
 
-        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s" % (self.get_base_url(), self.section_id)
 
         self.space.client.open_browser(app_type="image", request_url=request_url)
 
@@ -546,9 +545,9 @@ class MapSection(Section):
             "resolution": str(resolution),
             "zoom": str(zoom)
         }
-        self.add_state('maps', name, self.state)
+        self.set_state(self.state)
 
-        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s" % (self.get_base_url(), self.section_id)
 
         self.space.client.open_browser(app_type="map", request_url=request_url)
 
@@ -589,9 +588,9 @@ class NetworkSection(Section):
         if not name:
             name = str(uuid.uuid1())
 
-        self.add_state('networks', name, self.state)
+        self.set_state(self.state)
 
-        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s" % (self.get_base_url(), self.section_id)
 
         self.space.client.open_browser(app_type="network", request_url=request_url)
 
@@ -624,9 +623,9 @@ class ChartSection(Section):
         elif spec:
             self.state["spec"] = spec
 
-        self.add_state('charts', name, self.state)
+        self.set_state(self.state)
 
-        request_url = "%s/control.html?oveSectionId=%s&state=%s" % (self.get_base_url(), self.section_id, name)
+        request_url = "%s/control.html?oveSectionId=%s" % (self.get_base_url(), self.section_id)
 
         self.space.client.open_browser(app_type="chart", request_url=request_url)
 
