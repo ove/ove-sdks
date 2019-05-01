@@ -297,7 +297,7 @@ class Section(object):
 
     def delete(self):
         self.space.client.delete(
-            "%s:%s/section/%s" % (self.space.ove_host, self.space.control_port, self.section_id))
+            "%s:%s/sections/%s" % (self.space.ove_host, self.space.control_port, self.section_id))
         self.space.sections.remove(self)
 
     def add_state(self, app, state_name, data):
