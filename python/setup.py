@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='ove',
-      version='0.1',
+      version='0.1.0',
       description='Python client library for the the Open Visualisation Environment (OVE) API',
       author='James Scott-Brown',
       author_email='j.scott-brown@imperial.ac.uk',
