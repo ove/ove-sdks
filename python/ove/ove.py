@@ -317,7 +317,8 @@ class Section(object):
     def get_base_url(self):
         app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
                      'NetworkSection': 'networks', 'ChartSection': 'charts', 'SVGSection': 'svg',
-                     'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio'}
+                     'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio',
+                     'QRCodeSection': 'qrcodes'}
 
         app_name = app_names[self.__class__.__name__]
         return "%s:%s/app/%s" % (self.space.ove_host, self.space.control_port, app_name)
