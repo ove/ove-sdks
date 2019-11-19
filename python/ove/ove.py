@@ -34,7 +34,7 @@ class Space:
 
         self.sections = []
 
-        self.apps = ["maps", "images", "html", "videos", "networks", "charts", "svg", "whiteboard", "pdf", "audio"]
+        self.apps = ["maps", "images", "html", "videos", "networks", "charts", "svg", "whiteboard", "pdf", "audio", "qrcodes"]
 
     def enable_online_mode(self):
         self.client.offline = False
@@ -131,6 +131,8 @@ class Space:
             section = PDFSection(section_id, data, self)
         elif app_type == "audio":
             section = AudioSection(section_id, data, self)
+        elif app_type == "qrcodes":
+            section = QRCodeSection(section_id, data, self)
         else:
             print("Don't know how to create section of type " + app_type)
             return False
@@ -187,6 +189,9 @@ class Space:
 
             elif app_type == "audio":
                 section.set_specification(state["url"])
+
+            elif app_type == "qrcodes":
+                section.set_url(state['url'])
 
             else:
                 print("Don't know how to recreate section of type " + app_type)
@@ -312,7 +317,8 @@ class Section(object):
     def get_base_url(self):
         app_names = {'MapSection': 'maps', 'ImageSection': 'images', 'HTMLSection': 'html', 'VideoSection': 'videos',
                      'NetworkSection': 'networks', 'ChartSection': 'charts', 'SVGSection': 'svg',
-                     'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio'}
+                     'WhiteboardSection': 'whiteboard', 'PDFSection': 'pdf', 'AudioSection': 'audio',
+                     'QRCodeSection': 'qrcodes'}
 
         app_name = app_names[self.__class__.__name__]
         return "%s:%s/app/%s" % (self.space.ove_host, self.space.control_port, app_name)
@@ -348,6 +354,21 @@ class HTMLSection(Section):
     def get_app_json(self):
         return {
             "url": "OVE_APP_HTML",
+            "states": {"load": {"url": self.url}}
+        }
+
+
+class QRCodeSection(Section):
+    def __init__(self, section_id, section_data, space):
+        super(QRCodeSection, self).__init__(section_id, section_data, space)
+        self.url = ""
+
+    def set_url(self, url):
+        self.url = url
+
+    def get_app_json(self):
+        return {
+            "url": "OVE_APP_QRCODES",
             "states": {"load": {"url": self.url}}
         }
 
