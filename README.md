@@ -1,3 +1,11 @@
+🚨 This repository has been replaced and is no longer actively maintained.
+
+Please use the new repository instead:
+https://github.com/dsi-icl/vizzy-studio/
+
+Please direct all future development, issues, and contributions there.
+
+
 # Open Visualisation Environment - SDKs
 
 This repository contains a collection of SDKs designed for the convenience of developers who are interested in using [Open Visualisation Environment (OVE)](https://github.com/ove/ove) in their projects.
